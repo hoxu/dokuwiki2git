@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # Copyright (c) 2011 Heikki Hokkanen <hoxu at users.sf.net>
 # License: AGPLv3
+import fnmatch
+import logging
 import os
 import sys
 
@@ -13,15 +15,31 @@ Usage:
 $ dokuwiki2git /path/to/dokuwiki/data
 """
 
+logging.basicConfig(level = logging.DEBUG)
+log = logging.getLogger()
 class Converter:
 	def __init__(self):
 		self.datadir = None
+		self.metadir = None
 
 	def read_data(self):
 		# TODO go through data/meta
+		self.read_meta()
 		# TODO sort history
 		# TODO go through data/attic, importing pages referenced by .changes in meta
+		# TODO generate a list of commands to execute?
 		pass
+
+	def read_meta(self):
+		log.debug('Reading meta')
+		for path, dirs, files in os.walk(self.metadir):
+			for f in files:
+				if fnmatch.fnmatch(f, '*.changes'):
+					#relpath = path[len(self.metadir):]
+					relpath = os.path.relpath(os.path.join(path, f), self.metadir)
+					pagename = relpath.rsplit('.', 1)[0]
+					log.debug((path, relpath, pagename))
+			#print path, dirs, files
 
 	def run(self, params):
 		if len(params) == 0:
@@ -34,7 +52,8 @@ class Converter:
 		if not os.path.isfile(os.path.join(datadir, '_dummy')):
 			raise RuntimeError('Directory "%s" does not look like a dokuwiki datadir' % datadir)
 		self.datadir = datadir
-		print 'Using datadir: %s' % self.datadir
+		self.metadir = os.path.join(datadir, 'meta')
+		log.info('Using datadir: %s' % self.datadir)
 
 c = Converter()
 c.run(sys.argv[1:])
