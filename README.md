@@ -8,7 +8,10 @@ the wiki pages, with proper history. Thus, migration to git-backed wiki engines
 Usage
 -----
 
-$ dokuwiki2git /path/to/dokuwiki/data
+    $ dokuwiki2git /path/to/dokuwiki/data
+
+This will create a git repository in `gitdir/`, containing the whole history of
+the dokuwiki pages, one commit per change.
 
 License
 -------
