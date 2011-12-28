@@ -23,6 +23,7 @@ class Converter:
 	def __init__(self):
 		self.datadir = None
 		self.atticdir = None
+		self.mediadir = None
 		self.metadir = None
 		self.changelog = [] # (timestamp, ip, changetype, pagename, author, comment)
 		self.commands = [] # commands to run to create the git repository
@@ -103,7 +104,23 @@ class Converter:
 		self.changelog.sort()
 		# go through data/attic, importing pages referenced by .changes in meta
 		self.read_attic()
+		self.read_media()
 		self.commands.append('git commit --quiet --allow-empty --author="dokuwiki2git <dokuwiki2git@hoxu.github.com>" -m "Dokuwiki data imported by dokuwiki2git"')
+
+	def read_media(self):
+		log.info('Reading media')
+		for path, dirs, files in os.walk(self.mediadir):
+			for f in files:
+				fullfile = os.path.join(path, f)
+				filename = os.path.relpath(fullfile, self.datadir)
+				dirname = os.path.dirname(filename)
+				cmds = [
+					'mkdir -p "%s"' % dirname,
+					'cp "%s" "%s"' % (fullfile, filename),
+					'git add "%s"' % filename
+				]
+				self.commands.extend(cmds)
+		self.commands.append('git commit --quiet --allow-empty --author="dokuwiki2git <dokuwiki2git@hoxu.github.com>" -m "Import media files"')
 
 	def read_meta(self):
 		log.info('Reading meta')
@@ -160,6 +177,7 @@ class Converter:
 		self.datadir = datadir
 		self.metadir = os.path.join(datadir, 'meta')
 		self.atticdir = os.path.join(datadir, 'attic')
+		self.mediadir = os.path.join(datadir, 'media')
 		log.info('Using datadir: %s' % self.datadir)
 
 if __name__ == '__main__':
