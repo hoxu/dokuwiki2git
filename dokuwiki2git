@@ -23,17 +23,38 @@ class Converter:
 		self.atticdir = None
 		self.metadir = None
 		self.changelog = [] # (timestamp, ip, changetype, pagename, author, comment)
+		self.commands = [] # commands to run to create the git repository
+
+	def has_changelog_entry(self, pagepath, timestamp):
+		for c in self.changelog:
+			ts = c[0]
+			pagename = c[3]
+			if timestamp == ts and pagepath == pagename.replace(':', '/'):
+				return
+		log.warn('Attic contains "%s" timestamp %s, but is not referenced by changelog, skipping. Please report this!' % (pagepath, timestamp))
 
 	def read_attic(self):
 		log.debug('Reading attic')
+
 		# Check that all referenced pages exist in attic
 		for c in self.changelog:
 			pagepath = c[3].replace(':', '/')
 			filename = os.path.join(self.atticdir, pagepath + '.%s.txt.gz' % c[0])
 			if not os.path.exists(filename):
-				log.warn('File "%s" does not exist, despite being in changelog' % filename)
+				log.warn('File "%s" does not exist, despite being in changelog, skipping' % filename)
+
+		# check that all pages in attic have a matching changelog entry
+		for path, dirs, files in os.walk(self.atticdir):
+			for f in files:
+				if fnmatch.fnmatch(f, '*.txt.gz'):
+					filename = os.path.relpath(os.path.join(path, f), self.atticdir)
+					parts = filename.rsplit('.', 3)
+					pagepath = parts[0]
+					timestamp = parts[1]
+					self.has_changelog_entry(pagepath, timestamp)
 
 	def read_data(self):
+		self.commands.append('git init')
 		# go through data/meta
 		self.read_meta()
 		# sort history
