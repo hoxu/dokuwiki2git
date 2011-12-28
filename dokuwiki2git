@@ -81,7 +81,7 @@ class Converter:
 				cmds.append('git add "%s"' % pagefile)
 			elif c[2] == 'D': # delete
 				cmds.append('git rm "%s"' % pagefile)
-			cmds.append('git commit --allow-empty --allow-empty-message --author="%s" -m "%s"' % (author, message.replace('"', '\\"')))
+			cmds.append('git commit --allow-empty --allow-empty-message --author="%s" --date="%s +0000" -m "%s"' % (author, timestamp, message.replace('"', '\\"')))
 			self.commands.extend(cmds)
 
 		# check that all pages in attic have a matching changelog entry
