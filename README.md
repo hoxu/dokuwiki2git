@@ -22,6 +22,8 @@ commit is created from each changelog entry, with the content taken from
 `data/attic/<pagename>.<timestamp>.txt.gz`. The original *author name*, *IP*,
 *date* and *change message* become standard parts of the created git commit.
 
+Media files are imported under `media/`.
+
 License
 -------
 
