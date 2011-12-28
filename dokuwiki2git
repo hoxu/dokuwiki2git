@@ -128,7 +128,7 @@ class Converter:
 			return
 		pagename = pagepath.replace('/', ':')
 		log.debug('Reading meta for page "%s"' % pagename)
-		with open(fullpath, 'r') as f:
+		with open(fullpath, 'rb') as f:
 			for line in f:
 				changeparts = line.split('\t')
 				log.debug(changeparts)
