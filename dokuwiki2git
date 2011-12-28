@@ -1,0 +1,40 @@
+#!/usr/bin/env python
+# Copyright (c) 2011 Heikki Hokkanen <hoxu at users.sf.net>
+# License: AGPLv3
+import os
+import sys
+
+USAGE = """
+dokuwiki2git converts dokuwiki data directory into a git repository containing
+the wiki pages, with proper history. Thus, migration to git-backed wiki engines
+(eg. gollum) becomes easier.
+
+Usage:
+$ dokuwiki2git /path/to/dokuwiki/data
+"""
+
+class Converter:
+	def __init__(self):
+		self.datadir = None
+
+	def read_data(self):
+		# TODO go through data/meta
+		# TODO sort history
+		# TODO go through data/attic, importing pages referenced by .changes in meta
+		pass
+
+	def run(self, params):
+		if len(params) == 0:
+			print USAGE
+			sys.exit(0)
+		self.set_datadir(params[0])
+		self.read_data()
+
+	def set_datadir(self, datadir):
+		if not os.path.isfile(os.path.join(datadir, '_dummy')):
+			raise RuntimeError('Directory "%s" does not look like a dokuwiki datadir' % datadir)
+		self.datadir = datadir
+		print 'Using datadir: %s' % self.datadir
+
+c = Converter()
+c.run(sys.argv[1:])
