@@ -3,6 +3,7 @@
 # License: AGPLv3
 import fnmatch
 import logging
+import optparse
 import os
 import subprocess
 import sys
@@ -13,9 +14,7 @@ dokuwiki2git converts dokuwiki data directory into a git repository containing
 the wiki pages, with proper history. Thus, migration to git-backed wiki engines
 (eg. gollum) becomes easier.
 
-Usage:
-$ dokuwiki2git /path/to/dokuwiki/data
-"""
+$ dokuwiki2git [options] /path/to/dokuwiki/data"""
 
 logging.basicConfig(level = logging.DEBUG, format = '%(levelname)s - %(message)s')
 log = logging.getLogger()
@@ -30,6 +29,7 @@ class Converter:
 		self.gitdir = 'gitdir'
 	
 	def create_git_repository(self):
+		log.info('Creating git repository')
 		origdir = os.getcwd()
 		os.mkdir(self.gitdir)
 		os.chdir(self.gitdir)
@@ -55,7 +55,7 @@ class Converter:
 		log.warn('Attic contains "%s" timestamp %s, but is not referenced by changelog, skipping. Please report this!' % (pagepath, timestamp))
 
 	def read_attic(self):
-		log.debug('Reading attic')
+		log.info('Reading attic')
 
 		# Check that all referenced pages exist in attic
 		for c in self.changelog:
@@ -106,7 +106,7 @@ class Converter:
 		self.commands.append('git commit --quiet --allow-empty --author="dokuwiki2git <dokuwiki2git@hoxu.github.com>" -m "Dokuwiki data imported by dokuwiki2git"')
 
 	def read_meta(self):
-		log.debug('Reading meta')
+		log.info('Reading meta')
 		for path, dirs, files in os.walk(self.metadir):
 			for f in files:
 				if fnmatch.fnmatch(f, '*.changes'):
@@ -129,13 +129,23 @@ class Converter:
 				self.changelog.append(changeparts)
 
 	def run(self, params):
+		parser = optparse.OptionParser(usage = USAGE)
+		parser.add_option('-q', '--quiet', action='store_const', const=0, dest='verbose', help='Show only warnings and errors')
+		parser.add_option('-v', '--verbose', action='store_const', const=2, dest='verbose', help='Show debug messages', default=1)
+		(options, args) = parser.parse_args(params)
+		level = logging.WARN
+		if options.verbose:
+			level = (logging.WARN, logging.INFO, logging.DEBUG)[options.verbose]
+		log.setLevel(level)
+
 		time_start = time.time()
-		if len(params) == 0:
-			print >>sys.stderr, USAGE
-			sys.exit(0)
-		self.set_datadir(params[0])
+		if len(args) == 0:
+			parser.print_help()
+			log.error('Dokuwiki data directory is a required argument')
+			sys.exit(1)
+		self.set_datadir(args[0])
 		self.read_data()
-		log.info('%d commands queud to be executed' % len(self.commands))
+		log.info('%d commands queued to be executed' % len(self.commands))
 		self.create_git_repository()
 		time_end = time.time()
 		time_took = time_end - time_start
@@ -149,5 +159,6 @@ class Converter:
 		self.atticdir = os.path.join(datadir, 'attic')
 		log.info('Using datadir: %s' % self.datadir)
 
-c = Converter()
-c.run(sys.argv[1:])
+if __name__ == '__main__':
+	c = Converter()
+	c.run(sys.argv[1:])
