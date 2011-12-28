@@ -67,7 +67,7 @@ class Converter:
 			# depending on type of change, either add or remove
 			pagepath, timestamp = self.get_pagepath_and_timestamp(filename)
 			pagefile = pagepath + '.txt'
-			message = c[5]
+			message = pagepath + ': ' + c[5]
 			user = c[4]
 			if len(user) == 0:
 				user = 'dokuwiki2git'
