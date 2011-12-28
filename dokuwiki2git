@@ -17,8 +17,9 @@ Usage:
 $ dokuwiki2git /path/to/dokuwiki/data
 """
 
-logging.basicConfig(level = logging.DEBUG)
+logging.basicConfig(level = logging.DEBUG, format = '%(levelname)s - %(message)s')
 log = logging.getLogger()
+
 class Converter:
 	def __init__(self):
 		self.datadir = None
