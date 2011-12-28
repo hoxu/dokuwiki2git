@@ -150,6 +150,7 @@ class Converter:
 
 	def run(self, params):
 		parser = optparse.OptionParser(usage = USAGE)
+		parser.add_option('-o', '--output', dest='outputdir', help='Create git directory at outputdir. Default is "gitdir"', default = 'gitdir')
 		parser.add_option('-q', '--quiet', action='store_const', const=0, dest='verbose', help='Show only warnings and errors')
 		parser.add_option('-v', '--verbose', action='store_const', const=2, dest='verbose', help='Show debug messages', default=1)
 		(options, args) = parser.parse_args(params)
@@ -157,6 +158,7 @@ class Converter:
 		if options.verbose:
 			level = (logging.WARN, logging.INFO, logging.DEBUG)[options.verbose]
 		log.setLevel(level)
+		self.gitdir = options.outputdir
 
 		time_start = time.time()
 		if len(args) == 0:
