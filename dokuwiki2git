@@ -131,7 +131,7 @@ class Converter:
 	def run(self, params):
 		time_start = time.time()
 		if len(params) == 0:
-			print USAGE
+			print >>sys.stderr, USAGE
 			sys.exit(0)
 		self.set_datadir(params[0])
 		self.read_data()
