@@ -4,6 +4,7 @@
 import fnmatch
 import logging
 import os
+import subprocess
 import sys
 
 USAGE = """
@@ -24,6 +25,19 @@ class Converter:
 		self.metadir = None
 		self.changelog = [] # (timestamp, ip, changetype, pagename, author, comment)
 		self.commands = [] # commands to run to create the git repository
+		self.gitdir = 'gitdir'
+	
+	def create_git_repository(self):
+		origdir = os.getcwd()
+		os.mkdir(self.gitdir)
+		os.chdir(self.gitdir)
+		# run all commands
+		for c in self.commands:
+			log.debug('CMD: %s' % c)
+			ret = subprocess.call(c, shell=True)
+			if ret != 0:
+				raise RuntimeError('Command "%s" failed' % c)
+		os.chdir(origdir)
 
 	def get_pagepath_and_timestamp(self, filename):
 		filename = os.path.relpath(filename, self.atticdir)
@@ -53,15 +67,21 @@ class Converter:
 			pagepath, timestamp = self.get_pagepath_and_timestamp(filename)
 			pagefile = pagepath + '.txt'
 			message = c[5]
-			author = c[4] + '@' + c[1]
+			user = c[4]
+			if len(user) == 0:
+				user = 'dokuwiki2git'
+			author = '%s <dokuwiki@%s>' % (user, c[1])
 			cmds = []
 			if c[2] in ('C', 'E', 'e'): # create, edit, minor edit
+				dirname = os.path.dirname(pagefile)
+				if len(dirname) > 0:
+					cmds.append('mkdir -p "%s"' % dirname)
 				cmds.append('gunzip -c "%s" > "%s"' % (filename, pagefile))
 				cmds.append('git add "%s"' % pagefile)
 			elif c[2] == 'D': # delete
 				cmds.append('git rm "%s"' % pagefile)
-			cmds.append('git commit --author="%s" -m "%s"' % (author, message))
-			print cmds
+			cmds.append('git commit --allow-empty-message --author="%s" -m "%s"' % (author, message.replace('"', '\\"')))
+			#print cmds
 			self.commands.extend(cmds)
 
 		# check that all pages in attic have a matching changelog entry
@@ -88,6 +108,8 @@ class Converter:
 		self.commands.append('git commit --allow-empty --author="dokuwiki2git" -m "Dokuwiki data imported by dokuwiki2git"')
 		log.info('%d commands queud to be executed' % len(self.commands))
 		# TODO create the git repository, and execute commands
+		#print '\n'.join(self.commands)
+		self.create_git_repository()
 
 	def read_meta(self):
 		log.debug('Reading meta')
