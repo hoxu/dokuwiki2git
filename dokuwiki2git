@@ -89,6 +89,7 @@ class Converter:
 				log.debug(changeparts)
 				assert(len(changeparts) == 7)
 				assert(changeparts[3] == pagename)
+				assert(changeparts[2] in ('C', 'D', 'E', 'e')) # create, delete, edit, minor edit
 				self.changelog.append(changeparts)
 
 	def run(self, params):
