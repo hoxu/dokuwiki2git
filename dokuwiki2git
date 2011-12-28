@@ -49,11 +49,12 @@ class Converter:
 		pagename = pagepath.replace('/', ':')
 		log.debug('Reading meta for page "%s"' % pagename)
 		with open(fullpath, 'r') as f:
-			changeparts = f.readline().split('\t')
-			log.debug(changeparts)
-			assert(len(changeparts) == 7)
-			assert(changeparts[3] == pagename)
-			self.changelog.append(changeparts)
+			for line in f:
+				changeparts = line.split('\t')
+				log.debug(changeparts)
+				assert(len(changeparts) == 7)
+				assert(changeparts[3] == pagename)
+				self.changelog.append(changeparts)
 
 	def run(self, params):
 		if len(params) == 0:
