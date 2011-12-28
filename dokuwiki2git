@@ -25,6 +25,11 @@ class Converter:
 		self.changelog = [] # (timestamp, ip, changetype, pagename, author, comment)
 		self.commands = [] # commands to run to create the git repository
 
+	def get_pagepath_and_timestamp(self, filename):
+		filename = os.path.relpath(filename, self.atticdir)
+		parts = filename.rsplit('.', 3)
+		return parts[0], parts[1] # pagepath, filename
+
 	def has_changelog_entry(self, pagepath, timestamp):
 		for c in self.changelog:
 			ts = c[0]
@@ -42,6 +47,22 @@ class Converter:
 			filename = os.path.join(self.atticdir, pagepath + '.%s.txt.gz' % c[0])
 			if not os.path.exists(filename):
 				log.warn('File "%s" does not exist, despite being in changelog, skipping' % filename)
+				continue
+
+			# depending on type of change, either add or remove
+			pagepath, timestamp = self.get_pagepath_and_timestamp(filename)
+			pagefile = pagepath + '.txt'
+			message = c[5]
+			author = c[4] + '@' + c[1]
+			cmds = []
+			if c[2] in ('C', 'E', 'e'): # create, edit, minor edit
+				cmds.append('gunzip -c "%s" > "%s"' % (filename, pagefile))
+				cmds.append('git add "%s"' % pagefile)
+			elif c[2] == 'D': # delete
+				cmds.append('git rm "%s"' % pagefile)
+			cmds.append('git commit --author="%s" -m "%s"' % (author, message))
+			print cmds
+			self.commands.extend(cmds)
 
 		# check that all pages in attic have a matching changelog entry
 		for path, dirs, files in os.walk(self.atticdir):
@@ -64,7 +85,9 @@ class Converter:
 			#print c
 		# TODO go through data/attic, importing pages referenced by .changes in meta
 		self.read_attic()
-		# TODO generate a list of commands to execute?
+		self.commands.append('git commit --allow-empty --author="dokuwiki2git" -m "Dokuwiki data imported by dokuwiki2git"')
+		log.info('%d commands queud to be executed' % len(self.commands))
+		# TODO create the git repository, and execute commands
 
 	def read_meta(self):
 		log.debug('Reading meta')
