@@ -21,6 +21,7 @@ class Converter:
 	def __init__(self):
 		self.datadir = None
 		self.metadir = None
+		self.changelog = [] # (timestamp, ip, changetype, pagepath, author, comment)
 
 	def read_data(self):
 		# TODO go through data/meta
@@ -37,9 +38,22 @@ class Converter:
 				if fnmatch.fnmatch(f, '*.changes'):
 					#relpath = path[len(self.metadir):]
 					relpath = os.path.relpath(os.path.join(path, f), self.metadir)
-					pagename = relpath.rsplit('.', 1)[0]
-					log.debug((path, relpath, pagename))
+					pagepath = relpath.rsplit('.', 1)[0]
+					#log.debug((path, relpath, pagename))
+					self.read_meta_page(pagepath, os.path.join(path, f))
 			#print path, dirs, files
+
+	def read_meta_page(self, pagepath, fullpath):
+		if pagepath in ('_dokuwiki', '_comments'):
+			return
+		pagename = pagepath.replace('/', ':')
+		log.debug('Reading meta for page "%s"' % pagename)
+		with open(fullpath, 'r') as f:
+			changeparts = f.readline().split('\t')
+			log.debug(changeparts)
+			assert(len(changeparts) == 7)
+			assert(changeparts[3] == pagename)
+			self.changelog.append(changeparts)
 
 	def run(self, params):
 		if len(params) == 0:
