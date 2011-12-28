@@ -20,16 +20,30 @@ log = logging.getLogger()
 class Converter:
 	def __init__(self):
 		self.datadir = None
+		self.atticdir = None
 		self.metadir = None
-		self.changelog = [] # (timestamp, ip, changetype, pagepath, author, comment)
+		self.changelog = [] # (timestamp, ip, changetype, pagename, author, comment)
+
+	def read_attic(self):
+		log.debug('Reading attic')
+		# Check that all referenced pages exist in attic
+		for c in self.changelog:
+			pagepath = c[3].replace(':', '/')
+			filename = os.path.join(self.atticdir, pagepath + '.%s.txt.gz' % c[0])
+			if not os.path.exists(filename):
+				log.warn('File "%s" does not exist, despite being in changelog' % filename)
 
 	def read_data(self):
-		# TODO go through data/meta
+		# go through data/meta
 		self.read_meta()
-		# TODO sort history
+		# sort history
+		self.changelog.sort()
+		#print self.changelog
+		#for c in self.changelog:
+			#print c
 		# TODO go through data/attic, importing pages referenced by .changes in meta
+		self.read_attic()
 		# TODO generate a list of commands to execute?
-		pass
 
 	def read_meta(self):
 		log.debug('Reading meta')
@@ -68,6 +82,7 @@ class Converter:
 			raise RuntimeError('Directory "%s" does not look like a dokuwiki datadir' % datadir)
 		self.datadir = datadir
 		self.metadir = os.path.join(datadir, 'meta')
+		self.atticdir = os.path.join(datadir, 'attic')
 		log.info('Using datadir: %s' % self.datadir)
 
 c = Converter()
