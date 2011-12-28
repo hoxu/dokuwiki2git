@@ -81,7 +81,7 @@ class Converter:
 				cmds.append('gunzip -c "%s" > "%s"' % (filename, pagefile))
 				cmds.append('git add "%s"' % pagefile)
 			elif c[2] == 'D': # delete
-				cmds.append('git rm "%s"' % pagefile)
+				cmds.append('git rm --quiet "%s"' % pagefile)
 			cmds.append('git commit --quiet --allow-empty --allow-empty-message --author="%s" --date="%s +0000" -m "%s"' % (author, timestamp, message.replace('"', '\\"')))
 			self.commands.extend(cmds)
 
@@ -96,14 +96,14 @@ class Converter:
 					self.has_changelog_entry(pagepath, timestamp)
 
 	def read_data(self):
-		self.commands.append('git init')
+		self.commands.append('git init --quiet')
 		# go through data/meta
 		self.read_meta()
 		# sort history
 		self.changelog.sort()
 		# go through data/attic, importing pages referenced by .changes in meta
 		self.read_attic()
-		self.commands.append('git commit --allow-empty --author="dokuwiki2git <dokuwiki2git@hoxu.github.com>" -m "Dokuwiki data imported by dokuwiki2git"')
+		self.commands.append('git commit --quiet --allow-empty --author="dokuwiki2git <dokuwiki2git@hoxu.github.com>" -m "Dokuwiki data imported by dokuwiki2git"')
 
 	def read_meta(self):
 		log.debug('Reading meta')
