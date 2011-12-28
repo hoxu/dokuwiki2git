@@ -6,6 +6,7 @@ import logging
 import os
 import subprocess
 import sys
+import time
 
 USAGE = """
 dokuwiki2git converts dokuwiki data directory into a git repository containing
@@ -109,7 +110,6 @@ class Converter:
 		log.info('%d commands queud to be executed' % len(self.commands))
 		# TODO create the git repository, and execute commands
 		#print '\n'.join(self.commands)
-		self.create_git_repository()
 
 	def read_meta(self):
 		log.debug('Reading meta')
@@ -138,11 +138,16 @@ class Converter:
 				self.changelog.append(changeparts)
 
 	def run(self, params):
+		time_start = time.time()
 		if len(params) == 0:
 			print USAGE
 			sys.exit(0)
 		self.set_datadir(params[0])
 		self.read_data()
+		self.create_git_repository()
+		time_end = time.time()
+		time_took = time_end - time_start
+		log.info('Finished converting dokuwiki data dir "%s" into a git repository "%s", took %.2f seconds' % (self.datadir, self.gitdir, time_took))
 
 	def set_datadir(self, datadir):
 		if not os.path.isfile(os.path.join(datadir, '_dummy')):
