@@ -135,7 +135,7 @@ class Converter:
 		log.info('%d changelog entries for %d pages found' % (len(self.changelog), pages))
 
 	def read_meta_page(self, pagepath, fullpath):
-		if pagepath in ('_dokuwiki', '_comments'):
+		if pagepath in ('_dokuwiki', '_comments', '_media'):
 			return
 		pagename = pagepath.replace('/', ':')
 		log.debug('Reading meta for page "%s"' % pagename)
