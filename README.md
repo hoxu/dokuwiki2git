@@ -24,6 +24,17 @@ commit is created from each changelog entry, with the content taken from
 
 Media files are imported under `media/`.
 
+Caveats
+-------
+
+NOTE: Media file history is not imported yet. Let me know if you need this. In
+new DokuWiki:
+
+* `media/<filename>.<ext>` contains the latest version
+* `media_meta/<filepath>.<ext>.changes` contains the changelog
+* `media_attic/<filepath>.<timestamp>.<ext>` contains the old versions the
+   changelog mentions, except for the last one (which is under `media/`).
+
 License
 -------
 
