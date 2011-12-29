@@ -90,10 +90,8 @@ class Converter:
 		for path, dirs, files in os.walk(self.atticdir):
 			for f in files:
 				if fnmatch.fnmatch(f, '*.txt.gz'):
-					filename = os.path.relpath(os.path.join(path, f), self.atticdir)
-					parts = filename.rsplit('.', 3)
-					pagepath = parts[0]
-					timestamp = parts[1]
+					filename = os.path.join(path, f)
+					pagepath, timestamp = self.get_pagepath_and_timestamp(filename)
 					self.has_changelog_entry(pagepath, timestamp)
 
 	def read_data(self):
