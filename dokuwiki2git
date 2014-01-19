@@ -75,7 +75,7 @@ class Converter:
 				user = 'dokuwiki2git'
 			author = '%s <dokuwiki@%s>' % (user, c[1])
 			cmds = []
-			if c[2] in ('C', 'E', 'e'): # create, edit, minor edit
+			if c[2] in ('C', 'E', 'e', 'R'): # create, edit, minor edit, restore
 				dirname = os.path.dirname(pagefile)
 				if len(dirname) > 0:
 					cmds.append('mkdir -p "%s"' % dirname)
@@ -143,7 +143,7 @@ class Converter:
 				log.debug(changeparts)
 				assert(len(changeparts) == 7)
 				assert(changeparts[3] == pagename)
-				assert(changeparts[2] in ('C', 'D', 'E', 'e')) # create, delete, edit, minor edit
+				assert(changeparts[2] in ('C', 'D', 'E', 'e', 'R')) # create, delete, edit, minor edit, restore
 				self.changelog.append(changeparts)
 
 	def run(self, params):
