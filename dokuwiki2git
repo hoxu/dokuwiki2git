@@ -174,10 +174,10 @@ class Converter:
 	def set_datadir(self, datadir):
 		if not os.path.isfile(os.path.join(datadir, '_dummy')):
 			raise RuntimeError('Directory "%s" does not look like a dokuwiki datadir' % datadir)
-		self.datadir = datadir
-		self.metadir = os.path.join(datadir, 'meta')
-		self.atticdir = os.path.join(datadir, 'attic')
-		self.mediadir = os.path.join(datadir, 'media')
+		self.datadir = os.path.abspath(datadir)
+		self.metadir = os.path.join(self.datadir, 'meta')
+		self.atticdir = os.path.join(self.datadir, 'attic')
+		self.mediadir = os.path.join(self.datadir, 'media')
 		log.info('Using datadir: %s' % self.datadir)
 
 if __name__ == '__main__':
