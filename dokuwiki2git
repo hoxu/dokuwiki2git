@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 Heikki Hokkanen <hoxu at users.sf.net>
+# Copyright (c) 2011-2014 Heikki Hokkanen <hoxu at users.sf.net>
 # License: AGPLv3
 import fnmatch
 import logging
