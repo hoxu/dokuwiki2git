@@ -28,7 +28,19 @@ class Converter:
 		self.changelog = [] # (timestamp, ip, changetype, pagename, author, comment)
 		self.commands = [] # commands to run to create the git repository
 		self.gitdir = 'gitdir'
-	
+		self.users = {}
+
+	def read_user_data(self):
+		parentdir = os.path.abspath(os.path.join(self.datadir, os.pardir))
+		users_file = os.path.join(parentdir, 'conf', 'users.auth.php')
+		with open(users_file, 'rb') as f:
+			for line in f:
+				if not line.startswith("#") and len(line) > 1:
+					userparts = line.split(':')
+					assert(len(userparts) == 5)
+					log.debug(userparts)
+					self.users[userparts[0]] = {'name' : userparts[2], 'email': userparts[3]}
+
 	def create_git_repository(self):
 		log.info('Creating git repository')
 		origdir = os.getcwd()
@@ -71,9 +83,13 @@ class Converter:
 			pagefile = pagepath + '.txt'
 			message = pagepath + ': ' + c[5]
 			user = c[4]
+			email = 'dokuwiki@%s' % (c[1])
 			if len(user) == 0:
 				user = 'dokuwiki2git'
-			author = '%s <dokuwiki@%s>' % (user, c[1])
+			elif user in self.users:
+				email = self.users[user]['email']
+				user = self.users[user]['name']
+			author = '%s <%s>' % (user, email)
 			cmds = []
 			if c[2] in ('C', 'E', 'e', 'R'): # create, edit, minor edit, restore
 				dirname = os.path.dirname(pagefile)
@@ -96,6 +112,8 @@ class Converter:
 
 	def read_data(self):
 		self.commands.append('git init --quiet')
+		# find user Real Name and email
+		self.read_user_data()
 		# go through data/meta
 		self.read_meta()
 		# sort history
