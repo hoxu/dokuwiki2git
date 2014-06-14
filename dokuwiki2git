@@ -31,6 +31,7 @@ class Converter:
 		self.users = {}
 
 	def read_user_data(self):
+		log.info('Reading users.auth.php')
 		parentdir = os.path.abspath(os.path.join(self.datadir, os.pardir))
 		users_file = os.path.join(parentdir, 'conf', 'users.auth.php')
 		with open(users_file, 'rb') as f:
@@ -40,6 +41,7 @@ class Converter:
 					assert(len(userparts) == 5)
 					log.debug(userparts)
 					self.users[userparts[0]] = {'name' : userparts[2], 'email': userparts[3]}
+		log.info('Read %d users' % len(self.users))
 
 	def create_git_repository(self):
 		log.info('Creating git repository')
